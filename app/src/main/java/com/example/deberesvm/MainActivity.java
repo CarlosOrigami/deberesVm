@@ -7,17 +7,20 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerViewTareas;
     private Adapter tareaAdapter;
-    private TareasViewModel tareasViewModel;
+    private MutableLiveData<List<Tarea>> tareasLiveData = new MutableLiveData<>();
+    private List<Tarea> tareas = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,12 +30,11 @@ public class MainActivity extends AppCompatActivity {
         recyclerViewTareas = findViewById(R.id.recyclerViewTareas);
         recyclerViewTareas.setLayoutManager(new LinearLayoutManager(this));
 
-        tareasViewModel = new ViewModelProvider(this).get(TareasViewModel.class);
-
         tareaAdapter = new Adapter(new ArrayList<>());
         recyclerViewTareas.setAdapter(tareaAdapter);
 
-        tareasViewModel.getTareasLiveData().observe(this, tareaAdapter::actualizarLista);
+        // Observar cambios en LiveData
+        tareasLiveData.observe(this, tareaAdapter::actualizarLista);
 
         tareaAdapter.setOnItemClickListener(this::mostrarBottomSheet);
 
@@ -54,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
 
         editarOpcion.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
-
             AgregarTrabajo agregarTrabajoDialog = new AgregarTrabajo();
             Bundle args = new Bundle();
             args.putInt("posicion", position);
@@ -69,29 +70,51 @@ public class MainActivity extends AppCompatActivity {
             bottomSheetDialog.dismiss();
             new AlertDialog.Builder(this)
                     .setMessage("¿Seguro que quieres eliminar esta tarea?")
-                    .setPositiveButton("Eliminar", (dialog, which) -> {
-                        tareasViewModel.eliminarTarea(position);
-                        Toast.makeText(this, "Tarea eliminada.", Toast.LENGTH_SHORT).show();
-                    })
+                    .setPositiveButton("Eliminar", (dialog, which) -> eliminarTarea(position))
                     .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
                     .show();
         });
 
         completarOpcion.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
-
-            // Cambiar el estado de la tarea
-            tarea.toggleEstado();
-
-            // Actualizar en el ViewModel con la nueva lista
-            tareasViewModel.actualizarTarea(position, tarea);
-
-            // Mensaje de confirmación
-            Toast.makeText(this, "Tarea ahora está: " + tarea.getEstado(), Toast.LENGTH_SHORT).show();
+            completarTarea(position);
         });
-
 
         bottomSheetDialog.show();
     }
-}
 
+    public void agregarTarea(String asignatura, String descripcion, String fecha) {
+        if (asignatura.isEmpty() || descripcion.isEmpty() || fecha.isEmpty()) {
+            Toast.makeText(this, "Por favor, completa todos los campos.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        tareas.add(new Tarea(asignatura, descripcion, fecha));
+        tareasLiveData.setValue(new ArrayList<>(tareas)); // Notificar cambios
+    }
+
+    public void actualizarTarea(int position, String asignatura, String descripcion, String fecha) {
+        if (position >= 0 && position < tareas.size()) {
+            Tarea tarea = tareas.get(position);
+            tarea.setAsignatura(asignatura);
+            tarea.setDescripcion(descripcion);
+            tarea.setFecha(fecha);
+            tareasLiveData.setValue(new ArrayList<>(tareas)); // Notificar cambios
+        }
+    }
+
+    private void eliminarTarea(int position) {
+        if (position >= 0 && position < tareas.size()) {
+            tareas.remove(position);
+            tareasLiveData.setValue(new ArrayList<>(tareas)); // Notificar cambios
+        }
+    }
+
+    private void completarTarea(int position) {
+        if (position >= 0 && position < tareas.size()) {
+            tareas.get(position).toggleEstado();
+            tareasLiveData.setValue(new ArrayList<>(tareas)); // Notificar cambios
+            Toast.makeText(this, "Tarea ahora está: " + tareas.get(position).getEstado(), Toast.LENGTH_SHORT).show();
+        }
+    }
+}

@@ -41,10 +41,6 @@ public class Tarea {
         return estado;
     }
 
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
     public void toggleEstado() {
         if (this.estado.equals("Pendiente")) {
             this.estado = "Completada";

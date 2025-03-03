@@ -12,7 +12,6 @@ import android.widget.Spinner;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
 import java.util.Calendar;
 
 public class AgregarTrabajo extends DialogFragment {
@@ -20,9 +19,8 @@ public class AgregarTrabajo extends DialogFragment {
     private EditText descripcionEditText;
     private EditText fechaEditText;
     private Spinner asignaturaSpinner;
-    private TareasViewModel tareasViewModel;
     private int posicionEdicion = -1;
-    private Tarea tareaParaEditar;
+    private MainActivity mainActivity; // Referencia a MainActivity
 
     @NonNull
     @Override
@@ -35,8 +33,8 @@ public class AgregarTrabajo extends DialogFragment {
         fechaEditText = view.findViewById(R.id.fechaEditText);
         asignaturaSpinner = view.findViewById(R.id.asignaturaSpinner);
 
-        // Inicializar el ViewModel
-        tareasViewModel = new ViewModelProvider(requireActivity()).get(TareasViewModel.class);
+        // Obtener referencia a MainActivity
+        mainActivity = (MainActivity) getActivity();
 
         // Configurar Spinner de asignaturas
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
@@ -57,8 +55,6 @@ public class AgregarTrabajo extends DialogFragment {
             asignaturaSpinner.setSelection(adapter.getPosition(asignatura));
             descripcionEditText.setText(descripcion);
             fechaEditText.setText(fecha);
-
-            tareaParaEditar = new Tarea(asignatura, descripcion, fecha);
         }
 
         // Configuración del DatePickerDialog
@@ -89,13 +85,12 @@ public class AgregarTrabajo extends DialogFragment {
             return;
         }
 
-        if (posicionEdicion != -1) { // Se está editando una tarea existente
-            tareaParaEditar.setAsignatura(asignatura);
-            tareaParaEditar.setDescripcion(descripcion);
-            tareaParaEditar.setFecha(fecha);
-            tareasViewModel.actualizarTarea(posicionEdicion, tareaParaEditar);
-        } else { // Se está creando una nueva tarea
-            tareasViewModel.agregarTarea(new Tarea(asignatura, descripcion, fecha));
+        if (mainActivity != null) {
+            if (posicionEdicion != -1) { // Se está editando una tarea existente
+                mainActivity.actualizarTarea(posicionEdicion, asignatura, descripcion, fecha);
+            } else { // Se está creando una nueva tarea
+                mainActivity.agregarTarea(asignatura, descripcion, fecha);
+            }
         }
     }
 }
