@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">DeberesVM</string>
+
+    <string-array name="asignaturas">
+        <item>PMDM</item>
+        <item>AD</item>
+        <item>EIE</item>
+        <item>PDP</item>
+        <item>DI</item>
+    </string-array>
+</resources>

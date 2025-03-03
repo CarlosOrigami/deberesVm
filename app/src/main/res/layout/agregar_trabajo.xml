@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Spinner para elegir la asignatura -->
+    <Spinner
+        android:id="@+id/asignaturaSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- Campo para descripción del trabajo -->
+    <EditText
+        android:id="@+id/descripcionEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Descripción del trabajo" />
+
+    <!-- Campo para la fecha -->
+    <EditText
+        android:id="@+id/fechaEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Fecha de entrega"
+        android:focusable="false"
+        android:clickable="true" />
+
+</LinearLayout>
+
+
+
